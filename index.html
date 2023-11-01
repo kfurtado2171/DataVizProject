@@ -1,12 +1,67 @@
+<!-- U.S. Accidents (2016-2023) -->
+<!-- CIS 568 Project -->
+<!-- Group 12 -->
+<!-- Kyle Furtado & Jonathan Carreiro -->
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>568 Project</title>
-    <h1>project</h1>
-    <script src="libs/d3.js"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="./libs/d3.js"></script>
+    <script src="libs/d3jstopojson.v1.js"></script>
+
+    <title>U.S. Accidents (2016-2023)</title>
+
+    <style>
+        /* h1 & h3 formatting */
+        h1,h3 {
+            text-align: center
+        }
+
+        /* container formatting */
+        .container{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        }
+
+        /* svg formatting */
+        .svg {
+            width: 1250px;
+            height: 750px;
+            border: 1px solid #000;
+            margin: 10px;
+        }
+    </style>
 </head>
+
 <body>
+    <!-- page headings -->
+    <h1>U.S. Accidents (2016-2023)</h1>
+    <h3>Kyle Furtado & Jonathan Carreiro</h3>
+
+    <!-- svg container -->
+    <div class="container">
+        <!-- choropleth svg creation -->
+        <svg id="svg-choropleth" class="svg">
+            <text x="50%" y="30" text-anchor="middle" font-size="30">Choropleth of U.S. Accidents (2016-2023)</text>
+            <text x="50%" y="60" text-anchor="middle" font-size="20">A nationwide choropleth of the ratio of car accidents in relation to the population of each state is shown.</text>
+            <text x="50%" y="90" text-anchor="middle" font-size="20">Click on a state to zoom in and show a choropleth of the data for the counties within that state.</text>
+            <text x="50%" y="120" text-anchor="middle" font-size="20">Use a slider to switch the year of accidents being displayed in the choropleth.</text>
+            <text x="50%" y="150" text-anchor="middle" font-size="20">Apply a filter to select the types of traffic scene accidents being displayed in the choropleth (e.g., rotary, stop sign, etc.).</text>
+        </svg>
+        <!-- barchart svg creation -->
+        <svg id="svg-barchart" class="svg">
+            <text x="50%" y="30" text-anchor="middle" font-size="30">Bar Chart of U.S. Accidents (2016-2023)</text>
+            <text x="50%" y="60" text-anchor="middle" font-size="20">A bar chart to display the ratio of accidents relative to population per state (for side-by-side comparative purposes).</text>
+        </svg>
+    </div>
 
 </body>
+
 </html>
