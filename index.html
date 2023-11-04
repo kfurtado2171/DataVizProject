@@ -37,6 +37,7 @@
             border: 1px solid #000;
             margin: 10px;
         }
+
     </style>
 </head>
 
@@ -47,20 +48,119 @@
 
     <!-- svg container -->
     <div class="container">
+        <h1>Choropleth of U.S. Accidents (2016-2023)</h1>
+        <div class="fig1"></div>
+        <h1>Bar Chart of U.S. Accidents (2016-2023)</h1>
+        <div class="fig2"></div>
+
+
         <!-- choropleth svg creation -->
-        <svg id="svg-choropleth" class="svg">
-            <text x="50%" y="30" text-anchor="middle" font-size="30">Choropleth of U.S. Accidents (2016-2023)</text>
-            <text x="50%" y="60" text-anchor="middle" font-size="20">A nationwide choropleth of the ratio of car accidents in relation to the population of each state is shown.</text>
-            <text x="50%" y="90" text-anchor="middle" font-size="20">Click on a state to zoom in and show a choropleth of the data for the counties within that state.</text>
-            <text x="50%" y="120" text-anchor="middle" font-size="20">Use a slider to switch the year of accidents being displayed in the choropleth.</text>
-            <text x="50%" y="150" text-anchor="middle" font-size="20">Apply a filter to select the types of traffic scene accidents being displayed in the choropleth (e.g., rotary, stop sign, etc.).</text>
-        </svg>
-        <!-- barchart svg creation -->
-        <svg id="svg-barchart" class="svg">
-            <text x="50%" y="30" text-anchor="middle" font-size="30">Bar Chart of U.S. Accidents (2016-2023)</text>
-            <text x="50%" y="60" text-anchor="middle" font-size="20">A bar chart to display the ratio of accidents relative to population per state (for side-by-side comparative purposes).</text>
-        </svg>
+<!--        <svg id="svg-choropleth" class="svg">-->
+
+
+<!--        </svg>-->
+
+<!--        <h1>Bar Chart of U.S. Accidents (2016-2023)</h1>-->
+<!--        &lt;!&ndash; barchart svg creation &ndash;&gt;-->
+<!--        <svg id="svg-barchart" class="svg">-->
+
+<!--        </svg>-->
+
     </div>
+
+    <script>
+        // dimension of the page
+        const window_dims = {
+            width: window.innerWidth,
+            height: window.innerHeight
+        };
+
+        const svgWidth = window_dims.width/2;
+        const svgHeight = window_dims.width/3;
+
+
+        let svg = d3.select('svg');
+        let state_2016_json = "data/2016_state_data.topojson";
+        let projection = d3.geoAlbersUsa() //d3.geoAlbersUsa().scale(1300).translate([500, 400])
+
+        //data[0] is loaded data from d3.json(state_2016_json) in promise
+        Promise.all([d3.json(state_2016_json)], // asynchronous load of both data sources using promise.all()
+            d3.autoType())                                // Auto formatting data
+            .then(main)                                   // when data loaded, function main runs.
+            .catch(function (error) {
+                console.error("Error loading TopoJSON data:", error);
+            });
+
+
+        function main(data){
+            // Load topojson data
+            const accident_data = data[0];
+            //console.log(accident_data)
+
+            const generateChoropleth = (topo_data,containerName,width,height,margin=30)=> {
+                const svg = d3.select(containerName).append("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+
+                const geojson = topojson.feature(topo_data, topo_data.objects['2016_state_data']);
+
+                //console.log(geojson)
+                const geo_generator = d3.geoPath().projection(projection, geojson);
+
+                const colorInterpolator = d3.interpolateRgbBasis(['#d73027','#fc8d59','#fee090','#e0f3f8','#91bfdb','#4575b4'])
+
+                // if the data is scaled using log scale
+                const logScale = d3.scaleLog()
+                    .domain(d3.extent(geojson.features, (d) => {
+                        return d['properties']['Total Accidents']
+                    }))
+
+                // if the data is scaled using linear scale
+                const linearScale = d3.scaleLinear()
+                    .domain(d3.extent(geojson.features, (d) => {
+                        return d['properties']['Total Accidents']
+                    }))
+
+                svg.selectAll("path")
+                    .data(geojson.features)
+                    .enter()
+                    .append("path")
+                    .attr("d", d => {
+                        //console.log(d)
+                        //console.log(geo_generator(d));
+                        return geo_generator(d)
+                    })
+                    .attr("fill", d => colorInterpolator(linearScale(d.properties['Total Accidents'])))
+                    //.attr("fill", "none")
+                    .attr("stroke","black")
+                    .attr("stroke-width","0.5")
+
+                    //console.log(geojson.features[1].properties['Total Accidents'])
+                    //console.log(geojson['properties']['Total Accidents'])
+
+                    // .on("mouseenter", (m, d) => {
+                    //     tooltip.transition()
+                    //         .duration(200)
+                    //         .style("opacity", .9)
+                    //     tooltip.html(d['properties']['TOWN'] + " POPULATION: " + d['properties']['POP1980'])
+                    //         .style("left", m.clientX + "px")
+                    //         .style("top", m.clientY + "px");
+                    // })
+                    // .on("mousemove", (m, d) => {
+                    //     tooltip.style("opacity", .9)
+                    // })
+                    // .on("mouseout", (m, d) => {
+                    //     tooltip.transition()
+                    //         .duration(400)
+                    //         .style("opacity", 0)
+                    // })
+
+            }
+            generateChoropleth(accident_data,".fig1",900,700)
+        }
+
+
+    </script>
 
 </body>
 
