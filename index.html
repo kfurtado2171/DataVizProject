@@ -130,9 +130,10 @@
                         //console.log(geo_generator(d));
                         return geo_generator(d)
                     })
-                    .attr("fill", d => colorInterpolator(linearScale(d.properties['Total Accidents'])))
+                    //.attr("fill", d => colorInterpolator(linearScale(d.properties['Total Accidents'])))
+                    .attr("fill", d => colorInterpolator(logScale(d.properties['Total Accidents'])))
                     //.attr("fill", "none")
-                    .attr("stroke","black")
+                    //.attr("stroke","black")
                     .attr("stroke-width","0.5")
 
                     //console.log(geojson.features[1].properties['Total Accidents'])
