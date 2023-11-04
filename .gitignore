@@ -5,4 +5,3 @@ data_clean.csv.zip
 US_Accidents_March23.csv
 *.csv
 *.geojson
-*.topojson
