@@ -13,6 +13,7 @@
 
     <script src="./libs/d3.js"></script>
     <script src="libs/d3jstopojson.v1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.2.2/dist/echarts.min.js"></script>
 
     <title>U.S. Accidents (2016-2023)</title>
 
@@ -24,10 +25,10 @@
 
         /* container formatting */
         .container{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         /* svg formatting */
@@ -51,7 +52,7 @@
         <h1>Choropleth of U.S. Accidents (2016-2023)</h1>
         <div class="fig1"></div>
         <h1>Bar Chart of U.S. Accidents (2016-2023)</h1>
-        <div class="fig2"></div>
+        <div id="fig2" style="width: 70%; height: 400px;"></div>
 
 
         <!-- choropleth svg creation -->
@@ -92,6 +93,7 @@
             });
 
 
+        // -----------------------------CHOROPLETH-----------------------------
         function main(data){
             // Load topojson data
             const accident_data = data[0];
@@ -160,6 +162,107 @@
             generateChoropleth(accident_data,".fig1",900,700)
         }
 
+        // -----------------------------BAR CHART-----------------------------
+        // Dummy data for the example
+        const data = [
+            {y01: 120, y02: 180, y03: 100, y04: 77},
+            {y01: 60,  y02: 185, y03: 105, y04: 123},
+            {y01: 100, y02: 215, y03: 110, y04: 131},
+            {y01: 80,  y02: 230, y03: 105, y04: 231},
+            {y01: 120, y02: 240, y03: 105, y04: 44}
+        ];
+
+        // Initialize ECharts instance
+        var echartsInstance = echarts.init(document.getElementById('fig2'));
+
+        // ECharts option
+        var option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                }
+            },
+            legend: {},
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value'
+            },
+            yAxis: {
+                type: 'category',
+                data: ['MA', 'RI', 'CT', 'NY', 'NJ', 'VT', 'NH']
+            },
+            series: [
+                {
+                    name: 'Traffic Signal',
+                    type: 'bar',
+                    stack: 'total',
+                    label: {
+                        show: true
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: [320, 302, 301, 334, 390, 330, 320]
+                },
+                {
+                    name: 'Roundabout',
+                    type: 'bar',
+                    stack: 'total',
+                    label: {
+                        show: true
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: [120, 132, 101, 134, 90, 230, 210]
+                },
+                {
+                    name: 'Bump',
+                    type: 'bar',
+                    stack: 'total',
+                    label: {
+                        show: true
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: [220, 182, 191, 234, 290, 330, 310]
+                },
+                {
+                    name: 'Railway',
+                    type: 'bar',
+                    stack: 'total',
+                    label: {
+                        show: true
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: [150, 212, 201, 154, 190, 330, 410]
+                },
+                {
+                    name: 'Crossing',
+                    type: 'bar',
+                    stack: 'total',
+                    label: {
+                        show: true
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: [820, 832, 901, 934, 1290, 1330, 1320]
+                }
+            ]
+        };
+
+        // Set the option and render the chart
+        echartsInstance.setOption(option);
 
     </script>
 
