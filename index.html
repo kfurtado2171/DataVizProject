@@ -123,6 +123,35 @@
                         return d['properties']['Total Accidents']
                     }))
 
+                const legendWidth = 20; // Width of the legend
+                const legendHeight = 20; // Height of each legend item
+
+                // Append a group for the legend
+                const legend = svg.append("g")
+                    .attr("class", "legend")
+                    .attr("transform", `translate(${width - margin - legendWidth-50},${margin+350})`);
+
+                // Create the legend rectangles
+                legend.selectAll("rect")
+                    .data(d3.range(0, 1, 0.2)) // Create 5 legend items
+                    .enter()
+                    .append("rect")
+                    .attr("x", 0)
+                    .attr("y", (d, i) => i * legendHeight)
+                    .attr("width", legendWidth)
+                    .attr("height", legendHeight)
+                    .attr("fill", d => colorInterpolator(d));
+
+                // // Create the legend labels
+                // legend.selectAll("text")
+                //     .data([1, 10, 100, 1000, 10000])
+                //     .enter()
+                //     .append("text")
+                //     .attr("x", legendWidth + 5)
+                //     .attr("y", (d, i) => i * legendHeight + legendHeight / 2)
+                //     .attr("dy", "0.35em")
+                //     .text(d => d);
+
                 svg.selectAll("path")
                     .data(geojson.features)
                     .enter()
