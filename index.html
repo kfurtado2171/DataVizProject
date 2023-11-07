@@ -77,7 +77,7 @@
         };
 
         const svgWidth = window_dims.width/2;
-        const svgHeight = window_dims.width/3;
+        const svgHeight = window_dims.height/3;
 
 
         let svg = d3.select('svg');
@@ -101,7 +101,7 @@
 
             const generateChoropleth = (topo_data,containerName,width,height,margin=30)=> {
                 const svg = d3.select(containerName).append("svg")
-                    .attr("width", width)
+                    .attr("width", width+50)
                     .attr("height", height);
 
                 const geojson = topojson.feature(topo_data, topo_data.objects['2016_state_data']);
@@ -143,15 +143,15 @@
                     .attr("height", legendHeight)
                     .attr("fill", d => colorInterpolator2(d));
 
-                // // Create the legend labels
-                // legend.selectAll("text")
-                //     .data([1, 10, 100, 1000, 10000])
-                //     .enter()
-                //     .append("text")
-                //     .attr("x", legendWidth + 5)
-                //     .attr("y", (d, i) => i * legendHeight + legendHeight / 2)
-                //     .attr("dy", "0.35em")
-                //     .text(d => d);
+                // Create the legend labels
+                legend.selectAll("text")
+                    .data(['120000-150000','90000-120000','60000-90000','30000-60000','0-30000'])
+                    .enter()
+                    .append("text")
+                    .attr("x", legendWidth + 5)
+                    .attr("y", (d, i) => i * legendHeight + legendHeight / 2)
+                    .attr("dy", "0.35em")
+                    .text(d => d);
 
                 svg.selectAll("path")
                     .data(geojson.features)
