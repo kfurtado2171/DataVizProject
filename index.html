@@ -81,7 +81,8 @@
 
 
         let svg = d3.select('svg');
-        let state_2016_json = "data/2016_state_data.topojson";
+        let state_2016_json = "data/Project_Data_Final/2016_state_data_test.topojson";//"data/2016_state_data.topojson";
+        let state_2017_json = "";
         let projection = d3.geoAlbersUsa() //d3.geoAlbersUsa().scale(1300).translate([500, 400])
 
         //data[0] is loaded data from d3.json(state_2016_json) in promise
@@ -203,6 +204,30 @@
             //     {y01: 120, y02: 240, y03: 105, y04: 44}
             // ];
 
+            let scene_data_2016 = "data/Project_Data_Final/2016_SceneData.csv";
+
+            let values_T = [];
+            async function loadData(filename, scene) {
+                //let values_T = [];
+                let data = await d3.csv(filename);
+                console.log("DATA: " + data);
+
+                data.forEach(function (d) {
+                    values_T.push(+d[scene]);
+                });
+
+                console.log("VALUES_T: " + values_T)
+                return values_T;
+            }
+
+            let amenityData = [];
+            loadData(scene_data_2016, 'Amenity')
+                .then((result) => {
+                    //amenityData = result;
+                    console.log("RESULT: " + result);
+
+
+            console.log("AMENITY DATA: " + amenityData)
 
             // Initialize ECharts instance
             var echartsInstance = echarts.init(document.getElementById('fig2'));
@@ -244,8 +269,8 @@
                 },
                 yAxis: {
                     type: 'category',
-                    data: ['AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT',]
-                    //data: ['AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA', 'MD', 'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA', 'WI', 'WV', 'WY']
+                    //data: ['AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT',]
+                    data: ['AL', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY']
                 },
 
                 series: [
@@ -259,7 +284,8 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [321, 302, 301, 334, 390, 330, 320]
+                        //data: [321, 302, 301, 334, 390, 330, 320]
+                        data: result
                     },
                     {
                         name: 'Bump',
@@ -271,7 +297,7 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [120, 132, 101, 134, 90, 230, 210]
+                        //data: [120, 132, 101, 134, 90, 230, 210]
                     },
                     {
                         name: 'Crossing',
@@ -283,7 +309,7 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [220, 182, 191, 234, 290, 330, 310]
+                        //data: [220, 182, 191, 234, 290, 330, 310]
                     },
                     {
                         name: 'Give_Way',
@@ -295,7 +321,7 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [150, 212, 201, 154, 190, 330, 410]
+                        //data: [150, 212, 201, 154, 190, 330, 410]
                     },
                     {
                         name: 'Junction',
@@ -307,7 +333,7 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [820, 832, 901, 934, 1290, 1330, 1320]
+                        //data: [820, 832, 901, 934, 1290, 1330, 1320]
                     },
                     {
                         name: 'No_Exit',
@@ -319,7 +345,7 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [952, 1125, 543, 3520, 1477, 820, 1430]
+                        //data: [952, 1125, 543, 3520, 1477, 820, 1430]
                     },
                     {
                         name: 'Railway',
@@ -331,7 +357,7 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [862, 446, 2015, 1025, 389, 533, 262]
+                        //data: [862, 446, 2015, 1025, 389, 533, 262]
                     },
                     {
                         name: 'Roundabout',
@@ -343,7 +369,7 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [245, 724, 2437, 243, 4587, 1722, 1472]
+                        //data: [245, 724, 2437, 243, 4587, 1722, 1472]
                     },
                     {
                         name: 'Station',
@@ -355,7 +381,7 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [432, 1476, 2574, 786, 732, 435, 3573]
+                        //data: [432, 1476, 2574, 786, 732, 435, 3573]
                     },
                     {
                         name: 'Stop',
@@ -367,7 +393,7 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [1054, 367, 2345, 532, 3453, 2587, 234]
+                        //data: [1054, 367, 2345, 532, 3453, 2587, 234]
                     },
                     {
                         name: 'Traffic_Calming',
@@ -379,7 +405,7 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [324, 2420, 424, 3742, 245, 2420, 3750]
+                        //data: [324, 2420, 424, 3742, 245, 2420, 3750]
                     },
                     {
                         name: 'Traffic_Signal',
@@ -391,7 +417,7 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [214, 832, 573, 243, 3542, 1534, 4243]
+                        //data: [214, 832, 573, 243, 3542, 1534, 4243]
                     },
                     {
                         name: 'Turning_Loop',
@@ -403,13 +429,13 @@
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [945, 674, 762, 543, 1125, 3753, 1235]
+                        //data: [945, 674, 762, 543, 1125, 3753, 1235]
                     }
                 ]
             };
-
             // Set the option and render the chart
             echartsInstance.setOption(option);
+                })
         }
 
 
