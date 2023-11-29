@@ -1,4 +1,4 @@
-<!-- U.S. Accidents (2016-2023) -->
+<!-- U.S. Accidents (2016-2020) -->
 <!-- CIS 568 Project -->
 <!-- Group 12 -->
 <!-- Kyle Furtado & Jonathan Carreiro -->
@@ -15,7 +15,7 @@
     <script src="libs/d3jstopojson.v1.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.2.2/dist/echarts.min.js"></script>
 
-    <title>U.S. Accidents (2016-2023)</title>
+    <title>U.S. Accidents (2016-2020)</title>
 
     <style>
         /* h1 & h3 formatting */
@@ -44,14 +44,14 @@
 
 <body>
     <!-- page headings -->
-    <h1>U.S. Accidents (2016-2023)</h1>
+    <h1>U.S. Accidents (2016-2020)</h1>
     <h3>Kyle Furtado & Jonathan Carreiro</h3>
 
     <!-- svg container -->
     <div class="container">
-        <h1>Choropleth of U.S. Accidents (2016-2023)</h1>
+        <h1>U.S. Total Accidents per 100,000 Population<br>(2016-2020)</h1>
         <div class="fig1"></div>
-        <h1>Bar Chart of U.S. Accidents (2016-2023)</h1>
+        <h1>Proportion of U.S. Accident Scenes<br>(2016-2020)</h1>
         <div id="fig2" style="width: 85%; height: 750px;"></div>
 
 
@@ -61,7 +61,7 @@
 
 <!--        </svg>-->
 
-<!--        <h1>Bar Chart of U.S. Accidents (2016-2023)</h1>-->
+<!--        <h1>Bar Chart of U.S. Accidents (2016-2020)</h1>-->
 <!--        &lt;!&ndash; barchart svg creation &ndash;&gt;-->
 <!--        <svg id="svg-barchart" class="svg">-->
 
@@ -81,12 +81,16 @@
 
 
         let svg = d3.select('svg');
-        let state_2016_json = "data/Project_Data_Final/2016_state_data_test.topojson";//"data/2016_state_data.topojson";
-        let state_2017_json = "";
+
+        let year = "2019"   // DO BY SLIDER
+
+        let state_json = "data/Project_Data_Final/" + year + "_state_data.topojson"
+
+        //let state_json = "data/Project_Data_Final/2017_state_data.topojson";//"data/2016_state_data.topojson";
         let projection = d3.geoAlbersUsa() //d3.geoAlbersUsa().scale(1300).translate([500, 400])
 
         //data[0] is loaded data from d3.json(state_2016_json) in promise
-        Promise.all([d3.json(state_2016_json)], // asynchronous load of both data sources using promise.all()
+        Promise.all([d3.json(state_json)], // asynchronous load of both data sources using promise.all()
             d3.autoType())                                // Auto formatting data
             .then(main)                                   // when data loaded, function main runs.
             .catch(function (error) {
@@ -98,14 +102,14 @@
         function main(data) {
             // Load topojson data
             const accident_data = data[0];
-            //console.log(accident_data)
+            console.log(accident_data)
 
             const generateChoropleth = (topo_data, containerName, width, height, margin = 30) => {
                 const svg = d3.select(containerName).append("svg")
                     .attr("width", width + 50)
                     .attr("height", height);
 
-                const geojson = topojson.feature(topo_data, topo_data.objects['2016_state_data']);
+                const geojson = topojson.feature(topo_data, topo_data.objects[year + '_state_data']);
 
                 //console.log(geojson)
                 const geo_generator = d3.geoPath().projection(projection, geojson);
@@ -203,7 +207,13 @@
             //     {y01: 120, y02: 240, y03: 105, y04: 44}
             // ];
 
-            let scene_data_2016 = "data/Project_Data_Final/2016_SceneData.csv";
+            let scene_data = "data/Project_Data_Final/" + year + "_SceneData.csv";
+            //let scene_data = "data/Project_Data_Final/2017_SceneData.csv";
+            //let scene_data = "data/Project_Data_Final/2018_SceneData.csv";
+            //let scene_data = "data/Project_Data_Final/2019_SceneData.csv";
+            //let scene_data = "data/Project_Data_Final/2020_SceneData.csv";
+
+
 
             let values_T = [];
             // let amenityData = [];
@@ -235,7 +245,7 @@
                 //     bumpData.push(+d['Bump']);
 
 
-                d3.csv(scene_data_2016).then(function (data){
+                d3.csv(scene_data).then(function (data){
                     console.log(data)
                     //console.log(data[0]['Amenity'])
                     data.forEach(function (d) {
@@ -244,7 +254,7 @@
                         crossing_data.push(+d['Crossing'])
                         give_way_data.push(+d['Give_Way'])
                         junction_data.push(+d['Junction'])
-                        no_exit_data.push(+d['No_exit'])
+                        no_exit_data.push(+d['No_Exit'])
                         railway_data.push(+d['Railway'])
                         roundabout_data.push(+d['Roundabout'])
                         station_data.push(+d['Station'])
@@ -252,15 +262,11 @@
                         traffic_calming_data.push(+d['Traffic_Calming'])
                         traffic_signal_data.push(+d['Traffic_Signal'])
                         turning_loop_data.push(+d['Turning_Loop'])
-                        other_data.push(1 - (+d['Amenity']) - (+d['Bump']) - (+d['Crossing']) - (+d['Give_Way']) - (+d['Junction']) - (+d['Railway']) - (+d['Roundabout']) - (+d['Station']) - (+d['Stop']) - (+d['Traffic_Calming']) - (+d['Traffic_Signal']) - (+d['Turning_Loop']))
-
-                        //let tester = 1 - (+d['Amenity']) - (+d['Bump']) - (+d['Crossing']) - (+d['Give_Way']) - (+d['Junction']) - (+d['Railway']) - (+d['Roundabout']) - (+d['Station']) - (+d['Stop']) - (+d['Traffic_Calming']) - (+d['Traffic_Signal']) - (+d['Turning_Loop'])
-                        //console.log("TESTER: " + tester)
+                        other_data.push(+d['Other'])
                     });
 
-
-                console.log("BUMP DATA: " + bump_data)
-                console.log("OTHER_DATA: " + other_data)
+                //console.log("BUMP DATA: " + bump_data)
+                //console.log("OTHER_DATA: " + other_data)
 
                 //return values_T;
 
@@ -311,7 +317,8 @@
                     containLabel: true
                 },
                 xAxis: {
-                    type: 'value'
+                    type: 'value',
+                    max: 1
                 },
                 yAxis: {
                     type: 'category',
@@ -509,7 +516,7 @@
             //})
                 });
             }
-            loadData(scene_data_2016)
+            loadData(scene_data)
         }
 
 
