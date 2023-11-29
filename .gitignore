@@ -3,5 +3,5 @@ data_by_year.zip
 data_clean.csv
 data_clean.csv.zip
 US_Accidents_March23.csv
-*.csv
+.csv
 *.geojson
