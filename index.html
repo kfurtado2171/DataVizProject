@@ -210,9 +210,22 @@
             // let bumpData = [];
 
             function loadData(filename) {
+                let amenity_data = [];
+                let bump_data = [];
+                let crossing_data = [];
+                let give_way_data = [];
+                let junction_data = [];
+                let no_exit_data = [];
+                let railway_data = [];
+                let roundabout_data = [];
+                let station_data = [];
+                let stop_data = [];
+                let traffic_calming_data = [];
+                let traffic_signal_data = [];
+                let turning_loop_data = [];
+                let other_data = [];
+
                 //let values_T = [];
-                let amenityData = [];
-                let bumpData = [];
                 // let data = d3.csv(filename);
                 // console.log("DATA: " + data);
 
@@ -226,13 +239,28 @@
                     console.log(data)
                     //console.log(data[0]['Amenity'])
                     data.forEach(function (d) {
-                        amenityData.push(+d['Amenity'])
-                        bumpData.push(+d['Bump'])
+                        amenity_data.push(+d['Amenity'])
+                        bump_data.push(+d['Bump'])
+                        crossing_data.push(+d['Crossing'])
+                        give_way_data.push(+d['Give_Way'])
+                        junction_data.push(+d['Junction'])
+                        no_exit_data.push(+d['No_exit'])
+                        railway_data.push(+d['Railway'])
+                        roundabout_data.push(+d['Roundabout'])
+                        station_data.push(+d['Station'])
+                        stop_data.push(+d['Stop'])
+                        traffic_calming_data.push(+d['Traffic_Calming'])
+                        traffic_signal_data.push(+d['Traffic_Signal'])
+                        turning_loop_data.push(+d['Turning_Loop'])
+                        other_data.push(1 - (+d['Amenity']) - (+d['Bump']) - (+d['Crossing']) - (+d['Give_Way']) - (+d['Junction']) - (+d['Railway']) - (+d['Roundabout']) - (+d['Station']) - (+d['Stop']) - (+d['Traffic_Calming']) - (+d['Traffic_Signal']) - (+d['Turning_Loop']))
+
+                        //let tester = 1 - (+d['Amenity']) - (+d['Bump']) - (+d['Crossing']) - (+d['Give_Way']) - (+d['Junction']) - (+d['Railway']) - (+d['Roundabout']) - (+d['Station']) - (+d['Stop']) - (+d['Traffic_Calming']) - (+d['Traffic_Signal']) - (+d['Turning_Loop'])
+                        //console.log("TESTER: " + tester)
                     });
 
 
-                console.log("BUMP DATA: " + bumpData)
-                console.log("VALUES_T: " + values_T)
+                console.log("BUMP DATA: " + bump_data)
+                console.log("OTHER_DATA: " + other_data)
 
                 //return values_T;
 
@@ -262,7 +290,8 @@
                 '#37bd79',
                 '#79ccb3',
                 '#92cad1',
-                '#308fac'
+                '#308fac',
+                '#D3D3D3'
             ];
 
             // ECharts option
@@ -302,7 +331,7 @@
                             focus: 'series'
                         },
                         //data: [321, 302, 301, 334, 390, 330, 320]
-                        data: amenityData
+                        data: amenity_data
                     },
                     {
                         name: 'Bump',
@@ -315,7 +344,7 @@
                             focus: 'series'
                         },
                         //data: [120, 132, 101, 134, 90, 230, 210]
-                        data: bumpData
+                        data: bump_data
                     },
                     {
                         name: 'Crossing',
@@ -328,6 +357,7 @@
                             focus: 'series'
                         },
                         //data: [220, 182, 191, 234, 290, 330, 310]
+                        data: crossing_data
                     },
                     {
                         name: 'Give_Way',
@@ -340,6 +370,7 @@
                             focus: 'series'
                         },
                         //data: [150, 212, 201, 154, 190, 330, 410]
+                        data: give_way_data
                     },
                     {
                         name: 'Junction',
@@ -352,6 +383,7 @@
                             focus: 'series'
                         },
                         //data: [820, 832, 901, 934, 1290, 1330, 1320]
+                        data: junction_data
                     },
                     {
                         name: 'No_Exit',
@@ -364,6 +396,7 @@
                             focus: 'series'
                         },
                         //data: [952, 1125, 543, 3520, 1477, 820, 1430]
+                        data: no_exit_data
                     },
                     {
                         name: 'Railway',
@@ -376,6 +409,7 @@
                             focus: 'series'
                         },
                         //data: [862, 446, 2015, 1025, 389, 533, 262]
+                        data: railway_data
                     },
                     {
                         name: 'Roundabout',
@@ -388,6 +422,7 @@
                             focus: 'series'
                         },
                         //data: [245, 724, 2437, 243, 4587, 1722, 1472]
+                        data: roundabout_data
                     },
                     {
                         name: 'Station',
@@ -400,6 +435,7 @@
                             focus: 'series'
                         },
                         //data: [432, 1476, 2574, 786, 732, 435, 3573]
+                        data: station_data
                     },
                     {
                         name: 'Stop',
@@ -412,6 +448,7 @@
                             focus: 'series'
                         },
                         //data: [1054, 367, 2345, 532, 3453, 2587, 234]
+                        data: stop_data
                     },
                     {
                         name: 'Traffic_Calming',
@@ -424,6 +461,7 @@
                             focus: 'series'
                         },
                         //data: [324, 2420, 424, 3742, 245, 2420, 3750]
+                        data: traffic_calming_data
                     },
                     {
                         name: 'Traffic_Signal',
@@ -436,6 +474,7 @@
                             focus: 'series'
                         },
                         //data: [214, 832, 573, 243, 3542, 1534, 4243]
+                        data: traffic_signal_data
                     },
                     {
                         name: 'Turning_Loop',
@@ -448,6 +487,20 @@
                             focus: 'series'
                         },
                         //data: [945, 674, 762, 543, 1125, 3753, 1235]
+                        data: turning_loop_data
+                    },
+                    {
+                        name: 'Other',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: false
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        //data: [945, 674, 762, 543, 1125, 3753, 1235]
+                        data: other_data
                     }
                 ]
             };
