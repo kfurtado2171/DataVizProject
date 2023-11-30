@@ -50,7 +50,11 @@
     <!-- svg container -->
     <div class="container">
         <h1>U.S. Total Accidents per 100,000 Population<br>(2016-2020)</h1>
-        <div class="fig1"></div>
+        <div class="fig1">
+            <svg></svg>
+        </div>
+        <label for="theSlider">Display Year</label>
+        <input type="range" value="2020" min="2016" max="2020" id="theSlider">
         <h1>Proportion of U.S. Accident Scenes<br>(2016-2020)</h1>
         <div id="fig2" style="width: 85%; height: 750px;"></div>
 
@@ -82,15 +86,19 @@
 
         let svg = d3.select('svg');
 
-        let year = "2019"   // DO BY SLIDER
+        let year = "2020"   // DO BY SLIDER
 
-        let state_json = "data/Project_Data_Final/" + year + "_state_data.topojson"
+        let state_json_2016 = "data/Project_Data_Final/2016_state_data.topojson"
+        let state_json_2017 = "data/Project_Data_Final/2017_state_data.topojson"
+        let state_json_2018 = "data/Project_Data_Final/2018_state_data.topojson"
+        let state_json_2019 = "data/Project_Data_Final/2019_state_data.topojson"
+        let state_json_2020 = "data/Project_Data_Final/2020_state_data.topojson"
 
         //let state_json = "data/Project_Data_Final/2017_state_data.topojson";//"data/2016_state_data.topojson";
         let projection = d3.geoAlbersUsa() //d3.geoAlbersUsa().scale(1300).translate([500, 400])
 
         //data[0] is loaded data from d3.json(state_2016_json) in promise
-        Promise.all([d3.json(state_json)], // asynchronous load of both data sources using promise.all()
+        Promise.all([d3.json(state_json_2016), d3.json(state_json_2017), d3.json(state_json_2018), d3.json(state_json_2019), d3.json(state_json_2020)], // asynchronous load of both data sources using promise.all()
             d3.autoType())                                // Auto formatting data
             .then(main)                                   // when data loaded, function main runs.
             .catch(function (error) {
@@ -101,10 +109,12 @@
         // -----------------------------CHOROPLETH-----------------------------
         function main(data) {
             // Load topojson data
-            const accident_data = data[0];
-            console.log(accident_data)
+            let accident_data = data[4];
+            console.log(data[1])
 
             const generateChoropleth = (topo_data, containerName, width, height, margin = 30) => {
+                d3.select("svg").remove()
+
                 const svg = d3.select(containerName).append("svg")
                     .attr("width", width + 50)
                     .attr("height", height);
@@ -517,6 +527,33 @@
                 });
             }
             loadData(scene_data)
+
+            function update(changedYear){
+                year = String(changedYear)
+                if(changedYear == 2016){
+                    accident_data = data[0]
+                } else if(changedYear == 2017){
+                    accident_data = data[1]
+                }else if(changedYear == 2018){
+                    accident_data = data[2]
+                }else if(changedYear == 2019){
+                    accident_data = data[3]
+                }else{
+                    accident_data = data[4]
+                }
+
+                scene_data = "data/Project_Data_Final/" + changedYear + "_SceneData.csv";
+
+                generateChoropleth(accident_data, ".fig1", 900, 700)
+                loadData(scene_data)
+            }
+
+            let slider = document.querySelector("#theSlider")
+            slider.addEventListener("change",()=>{
+                const newYear = +slider.value; // get the value of the slider
+                //console.log(newYear)
+                update(newYear);
+            })
         }
 
 
