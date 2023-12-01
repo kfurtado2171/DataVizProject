@@ -18,9 +18,15 @@
     <title>U.S. Accidents (2016-2020)</title>
 
     <style>
+        body {
+            background-color: antiquewhite;
+        }
+
         /* h1 & h3 formatting */
         h1,h3 {
-            text-align: center
+            text-align: center;
+            font-family: 'Lucida Console', monospace;
+            color: orangered;
         }
 
         /* container formatting */
@@ -39,6 +45,46 @@
             margin: 10px;
         }
 
+        #sliderLabelsContainer {
+            font-family: "Lucida Console", monospace;
+        }
+
+        /* Style the slider track with visible steps */
+        #theSlider {
+            width: 100%;
+        }
+
+        .slider-container {
+            position: relative;
+            width: 50%;
+            /*margin: 0 auto;*/
+            margin-bottom: 50px;
+        }
+
+        .slider-label {
+            position: absolute;
+            bottom: -20px;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+
+        label[for="theSlider"] {
+            font-family: 'Lucida Console', monospace;
+            font-size: 15pt;
+            font-weight: bold;
+        }
+
+        #sliderLabel {
+            font-family: 'Lucida Console', monospace;
+            font-size: 20pt;
+            font-weight: bold;
+            color: orangered;;
+        }
+
+        .fig1 {
+            margin-bottom: -10%; /* Adjust as needed */
+        }
+
     </style>
 </head>
 
@@ -50,11 +96,24 @@
     <!-- svg container -->
     <div class="container">
         <h1>U.S. Total Accidents per 100,000 Population<br>(2016-2020)</h1>
-        <div class="fig1">
-            <svg></svg>
+        <div class="fig1"></div>
+
+        <label for="theSlider" >Display Year</label>
+        <span id="sliderLabel">2020</span>
+        <datalist id="yearList">
+            <option value="2016"></option>
+            <option value="2017"></option>
+            <option value="2018"></option>
+            <option value="2019"></option>
+            <option value="2020"></option>
+        </datalist>
+
+        <div class="slider-container">
+            <input type="range" value="2020" min="2016" max="2020" id="theSlider" step="1">
+            <div id="sliderLabelsContainer"></div>
         </div>
-        <label for="theSlider">Display Year</label>
-        <input type="range" value="2020" min="2016" max="2020" id="theSlider">
+
+
         <h1>Proportion of U.S. Accident Scenes<br>(2016-2020)</h1>
         <div id="fig2" style="width: 85%; height: 750px;"></div>
 
@@ -86,7 +145,7 @@
 
         let svg = d3.select('svg');
 
-        let year = "2020"   // DO BY SLIDER
+        let year = "2020"
 
         let state_json_2016 = "data/Project_Data_Final/2016_state_data.topojson"
         let state_json_2017 = "data/Project_Data_Final/2017_state_data.topojson"
@@ -178,10 +237,10 @@
                         return geo_generator(d)
                     })
                     //.attr("fill", d => colorInterpolator(linearScale(d.properties['Total Accidents'])))
-                    .attr("fill", d => colorInterpolator(logScale(d.properties['Total Accidents'])))
                     //.attr("fill", "none")
                     //.attr("stroke","black")
                     .attr("stroke-width", "0.5")
+                    .attr("fill", d => colorInterpolator(logScale(d.properties['Total Accidents'])))
 
                 //console.log(geojson.features[1].properties['Total Accidents'])
                 //console.log(geojson['properties']['Total Accidents'])
@@ -549,11 +608,31 @@
             }
 
             let slider = document.querySelector("#theSlider")
+            let sliderLabel = document.querySelector("#sliderLabel");
+            let sliderLabelsContainer = document.querySelector("#sliderLabelsContainer");
+            updateSliderLabels();
             slider.addEventListener("change",()=>{
                 const newYear = +slider.value; // get the value of the slider
                 //console.log(newYear)
+                sliderLabel.textContent = newYear;
                 update(newYear);
+                updateSliderLabels();
             })
+
+            function updateSliderLabels() {
+                sliderLabelsContainer.innerHTML = "";
+                const minYear = +slider.min;
+                const maxYear = +slider.max;
+                const step = +slider.step;
+
+                for (let year = minYear; year <= maxYear; year += step) {
+                    const label = document.createElement("div");
+                    label.classList.add("slider-label");
+                    label.textContent = year;
+                    label.style.left = ((year - minYear) / (maxYear - minYear) * 100) + "%";
+                    sliderLabelsContainer.appendChild(label);
+                }
+            }
         }
 
 
