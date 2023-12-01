@@ -26,7 +26,7 @@
         h1,h3 {
             text-align: center;
             font-family: 'Lucida Console', monospace;
-            color: orangered;
+            color: #D73026;
         }
 
         /* container formatting */
@@ -43,6 +43,21 @@
             height: 750px;
             border: 1px solid #000;
             margin: 10px;
+        }
+
+        #tooltip{
+            opacity: 0;
+            background-color: antiquewhite;
+            position: absolute;
+            width: auto;
+            height: auto;
+            font-family: "Lucida Console", monospace;
+            align-content: center;
+        }
+
+        .tooltipData{
+            font-family: "Lucida Console", monospace;
+            font-size: small;
         }
 
         #sliderLabelsContainer {
@@ -78,7 +93,7 @@
             font-family: 'Lucida Console', monospace;
             font-size: 20pt;
             font-weight: bold;
-            color: orangered;;
+            color: #015CC8;
         }
 
         .fig1 {
@@ -92,6 +107,8 @@
     <!-- page headings -->
     <h1>U.S. Accidents (2016-2020)</h1>
     <h3>Kyle Furtado & Jonathan Carreiro</h3>
+
+    <div id="tooltip"></div>
 
     <!-- svg container -->
     <div class="container">
@@ -115,7 +132,7 @@
 
 
         <h1>Proportion of U.S. Accident Scenes<br>(2016-2020)</h1>
-        <div id="fig2" style="width: 85%; height: 750px;"></div>
+        <div id="fig2" style="width: 85%; height: 800px;"></div>
 
 
         <!-- choropleth svg creation -->
@@ -169,7 +186,7 @@
         function main(data) {
             // Load topojson data
             let accident_data = data[4];
-            console.log(data[1])
+            //console.log(data[1])
 
             const generateChoropleth = (topo_data, containerName, width, height, margin = 30) => {
                 d3.select("svg").remove()
@@ -208,24 +225,36 @@
 
                 // Create the legend rectangles
                 legend.selectAll("rect")
-                    .data(d3.range(0, 1, 0.2)) // Create 5 legend items
+                    .data(d3.range(0, 1, 0.1)) // Create 10 legend items
                     .enter()
                     .append("rect")
-                    .attr("x", 0)
-                    .attr("y", (d, i) => i * legendHeight)
+                    .attr("x", 50)
+                    .attr("y", (d, i) => i * legendHeight - 100)
                     .attr("width", legendWidth)
                     .attr("height", legendHeight)
                     .attr("fill", d => colorInterpolator2(d));
 
+                let min_max_total = d3.extent(geojson.features, (d) => {
+                        return d['properties']['Total Accidents']
+                    })
+                console.log(min_max_total)
+                let min_total = Math.floor(min_max_total[0])
+                let max_total = Math.ceil(min_max_total[1])
+
+                max_total
+
                 // Create the legend labels
                 legend.selectAll("text")
-                    .data(['120000-150000', '90000-120000', '60000-90000', '30000-60000', '0-30000'])
+                    //.data(['120000-150000', '90000-120000', '60000-90000', '30000-60000', '0-30000'])
+                    .data([max_total, '', '', '', '', '', '', '', '', min_total])
                     .enter()
                     .append("text")
-                    .attr("x", legendWidth + 5)
-                    .attr("y", (d, i) => i * legendHeight + legendHeight / 2)
+                    .attr("x", legendWidth + 60)
+                    .attr("y", (d, i) => i * legendHeight + legendHeight / 2 - 100)
                     .attr("dy", "0.35em")
                     .text(d => d);
+
+                const tooltip = d3.select("#tooltip");
 
                 svg.selectAll("path")
                     .data(geojson.features)
@@ -236,32 +265,56 @@
                         //console.log(geo_generator(d));
                         return geo_generator(d)
                     })
+                    .attr("fill","antiquewhite")
+                    // .exit()
+
+                //console.log(geojson.features[1].properties['Total Accidents'])
+                //console.log(geojson['properties']['Total Accidents'])
+
+                    .on("mouseenter", (m, d) => {
+                        d3.select('#tooltip')
+                            .style("opacity",.8)
+                            .style("left",(m.clientX+20).toString()+"px")
+                            .style("top",(m.clientY+20).toString()+"px")
+                            .html(
+                                "<div><strong>Accidents/100k:</strong></div>" +
+                                "<div>" +d.properties['Total Accidents'] + "</div>"
+                            )
+
+                        // tooltip.transition()
+                        //     .duration(200)
+                        //     .style("opacity", .9)
+                        // tooltip.html(d.properties['Total Accidents'])
+                        //     .style("left", m.clientX-10 + "px")
+                        //     .style("top", m.clientY-10 + "px");
+                    })
+                    .on("mousemove", (m, d) => {
+                        tooltip.style("opacity", .9)
+                    })
+                    .on("mouseout", (m, d) => {
+                        tooltip.transition()
+                            .duration(10)
+                            .style("opacity", 0)
+                    })
+                    .transition()
+                    .delay((_,i)=>i*2)
+                    .duration(500)
                     //.attr("fill", d => colorInterpolator(linearScale(d.properties['Total Accidents'])))
                     //.attr("fill", "none")
                     //.attr("stroke","black")
                     .attr("stroke-width", "0.5")
                     .attr("fill", d => colorInterpolator(logScale(d.properties['Total Accidents'])))
-
-                //console.log(geojson.features[1].properties['Total Accidents'])
-                //console.log(geojson['properties']['Total Accidents'])
-
-                // .on("mouseenter", (m, d) => {
-                //     tooltip.transition()
-                //         .duration(200)
-                //         .style("opacity", .9)
-                //     tooltip.html(d['properties']['TOWN'] + " POPULATION: " + d['properties']['POP1980'])
-                //         .style("left", m.clientX + "px")
-                //         .style("top", m.clientY + "px");
-                // })
-                // .on("mousemove", (m, d) => {
-                //     tooltip.style("opacity", .9)
-                // })
-                // .on("mouseout", (m, d) => {
-                //     tooltip.transition()
-                //         .duration(400)
-                //         .style("opacity", 0)
-                // })
-
+                    .style("fill",d=>{
+                        try{
+                            // normal condition
+                            return d => colorInterpolator(logScale(d.properties['Total Accidents']));
+                        }
+                        catch (error)
+                        {
+                            // in the case of counties with no data;
+                            return "white";
+                        }
+                    })
             }
             generateChoropleth(accident_data, ".fig1", 900, 700)
 
@@ -315,7 +368,7 @@
 
 
                 d3.csv(scene_data).then(function (data){
-                    console.log(data)
+                    //console.log(data)
                     //console.log(data[0]['Amenity'])
                     data.forEach(function (d) {
                         amenity_data.push(+d['Amenity'])
@@ -373,7 +426,8 @@
             var option = {
                 color: customColors, // Set the custom color palette
                 tooltip: {
-                    trigger: 'axis',
+                    trigger: 'item',
+                    position: [1000,65],
                     axisPointer: {
                         type: 'shadow'
                     }
@@ -386,11 +440,26 @@
                     containLabel: true
                 },
                 xAxis: {
+                    name: 'Proportion',
+                    nameLocation: 'middle',
+                    nameGap: 25,
+                    nameTextStyle: {
+                        fontSize: 20,
+                    },
                     type: 'value',
                     max: 1
                 },
                 yAxis: {
+                    name: 'State',
+                    nameLocation: 'middle',
+                    nameGap: 40,
+                    nameTextStyle: {
+                        fontSize: 20,
+                    },
                     type: 'category',
+                    axisLabel: {
+                        interval: 0, // Set to 0 to display all labels
+                    },
                     //data: ['AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT',]
                     data: ['AL', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY']
                 },
