@@ -170,11 +170,23 @@
         let state_json_2019 = "data/Project_Data_Final/2019_state_data.topojson"
         let state_json_2020 = "data/Project_Data_Final/2020_state_data.topojson"
 
+        let county_json_2016 = "data/Project_Data_Final/2016_county_data.topojson"
+        let county_json_2017 = "data/Project_Data_Final/2017_county_data.topojson"
+        let county_json_2018 = "data/Project_Data_Final/2018_county_data.topojson"
+        let county_json_2019 = "data/Project_Data_Final/2019_county_data.topojson"
+        let county_json_2020 = "data/Project_Data_Final/2020_county_data.topojson"
+
         //let state_json = "data/Project_Data_Final/2017_state_data.topojson";//"data/2016_state_data.topojson";
         let projection = d3.geoAlbersUsa() //d3.geoAlbersUsa().scale(1300).translate([500, 400])
 
         //data[0] is loaded data from d3.json(state_2016_json) in promise
-        Promise.all([d3.json(state_json_2016), d3.json(state_json_2017), d3.json(state_json_2018), d3.json(state_json_2019), d3.json(state_json_2020)], // asynchronous load of both data sources using promise.all()
+        Promise.all(
+            [d3.json(state_json_2016), d3.json(state_json_2017),
+            d3.json(state_json_2018), d3.json(state_json_2019),
+            d3.json(state_json_2020), d3.json(county_json_2016),
+            d3.json(county_json_2017), d3.json(county_json_2018),
+            d3.json(county_json_2019), d3.json(county_json_2020)], // asynchronous load of both data sources using promise.all()
+
             d3.autoType())                                // Auto formatting data
             .then(main)                                   // when data loaded, function main runs.
             .catch(function (error) {
@@ -185,7 +197,8 @@
         // -----------------------------CHOROPLETH-----------------------------
         function main(data) {
             // Load topojson data
-            let accident_data = data[4];
+            let state_accident_data = data[4];
+            let county_accident_data = data[9];
             //console.log(data[1])
 
             const generateChoropleth = (topo_data, containerName, width, height, margin = 30) => {
@@ -197,7 +210,7 @@
 
                 const geojson = topojson.feature(topo_data, topo_data.objects[year + '_state_data']);
 
-                //console.log(geojson)
+                console.log(geojson)
                 const geo_generator = d3.geoPath().projection(projection, geojson);
 
                 const colorInterpolator = d3.interpolateRgbBasis(['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'].reverse())
@@ -296,6 +309,9 @@
                             .duration(10)
                             .style("opacity", 0)
                     })
+                    .on("click", (m, d) => {
+                        generateState(county_accident_data, ".fig1", d['properties']['STATEFP'], 900, 700);
+                    })
                     .transition()
                     .delay((_,i)=>i*2)
                     .duration(500)
@@ -316,8 +332,147 @@
                         }
                     })
             }
-            generateChoropleth(accident_data, ".fig1", 900, 700)
+            generateChoropleth(state_accident_data, ".fig1", 900, 700)
 
+            // ---------------------SINGLE STATE CHOROPLOETH----------------------
+            const generateState = (topo_data, containerName, state, width, height, margin = 30) => {
+                d3.select("svg").remove()
+
+                const svg = d3.select(containerName).append("svg")
+                    .attr("width", width + 50)
+                    .attr("height", height);
+
+                let geojson = {};
+                geojson.type = "FeatureCollection";
+
+                geojson.features = topojson.feature(topo_data, topo_data.objects[year + '_county_data'])
+                    .features
+                    .filter(function(d){
+                        return d['properties']['STATEFP'] === state;
+                    });
+
+                console.log(geojson)
+
+                let proj = d3.geoMercator().fitSize([width - margin, height - margin], geojson)
+
+                const geo_generator = d3.geoPath().projection(proj);
+
+                const colorInterpolator = d3.interpolateRgbBasis(['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'].reverse())
+                const colorInterpolator2 = d3.interpolateRgbBasis(['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'])
+
+                // if the data is scaled using log scale
+                const logScale = d3.scaleLog()
+                    .domain(d3.extent(geojson.features, (d) => {
+                        return d['properties']['Total Accidents']
+                    }))
+
+                // if the data is scaled using linear scale
+                const linearScale = d3.scaleLinear()
+                    .domain(d3.extent(geojson.features, (d) => {
+                        return d['properties']['Total Accidents']
+                    }))
+
+                const legendWidth = 20; // Width of the legend
+                const legendHeight = 20; // Height of each legend item
+
+                // Append a group for the legend
+                const legend = svg.append("g")
+                    .attr("class", "legend")
+                    .attr("transform", `translate(${width - margin - legendWidth - 50},${margin + 350})`);
+
+                // Create the legend rectangles
+                legend.selectAll("rect")
+                    .data(d3.range(0, 1, 0.1)) // Create 10 legend items
+                    .enter()
+                    .append("rect")
+                    .attr("x", 50)
+                    .attr("y", (d, i) => i * legendHeight - 100)
+                    .attr("width", legendWidth)
+                    .attr("height", legendHeight)
+                    .attr("fill", d => colorInterpolator2(d));
+
+                let min_max_total = d3.extent(geojson.features, (d) => {
+                    return d['properties']['Total Accidents']
+                })
+                console.log(min_max_total)
+                let min_total = Math.floor(min_max_total[0])
+                let max_total = Math.ceil(min_max_total[1])
+
+                // max_total
+
+                // Create the legend labels
+                legend.selectAll("text")
+                    //.data(['120000-150000', '90000-120000', '60000-90000', '30000-60000', '0-30000'])
+                    .data([max_total, '', '', '', '', '', '', '', '', min_total])
+                    .enter()
+                    .append("text")
+                    .attr("x", legendWidth + 60)
+                    .attr("y", (d, i) => i * legendHeight + legendHeight / 2 - 100)
+                    .attr("dy", "0.35em")
+                    .text(d => d);
+
+                const tooltip = d3.select("#tooltip");
+
+                svg.selectAll("path")
+                    .data(geojson.features)
+                    .enter()
+                    .append("path")
+                    .attr("d", d => {
+                        //console.log(d)
+                        //console.log(geo_generator(d));
+                        return geo_generator(d)
+                    })
+                    .attr("fill","antiquewhite")
+                    // .exit()
+
+                    //console.log(geojson.features[1].properties['Total Accidents'])
+                    //console.log(geojson['properties']['Total Accidents'])
+
+                    .on("mouseenter", (m, d) => {
+                        d3.select('#tooltip')
+                            .style("opacity",.8)
+                            .style("left",(m.clientX+20).toString()+"px")
+                            .style("top",(m.clientY+20).toString()+"px")
+                            .html(
+                                "<div><strong>Accidents/100:</strong></div>" +
+                                "<div>" +d.properties['Total Accidents'] + "</div>"
+                            )
+
+                        // tooltip.transition()
+                        //     .duration(200)
+                        //     .style("opacity", .9)
+                        // tooltip.html(d.properties['Total Accidents'])
+                        //     .style("left", m.clientX-10 + "px")
+                        //     .style("top", m.clientY-10 + "px");
+                    })
+                    .on("mousemove", (m, d) => {
+                        tooltip.style("opacity", .9)
+                    })
+                    .on("mouseout", (m, d) => {
+                        tooltip.transition()
+                            .duration(10)
+                            .style("opacity", 0)
+                    })
+                    .transition()
+                    .delay((_,i)=>i*2)
+                    .duration(3000)
+                    //.attr("fill", d => colorInterpolator(linearScale(d.properties['Total Accidents'])))
+                    //.attr("fill", "none")
+                    //.attr("stroke","black")
+                    .attr("stroke-width", "0.5")
+                    .attr("fill", d => colorInterpolator(linearScale(d.properties['Total Accidents'])))
+                    .style("fill",d=>{
+                        try{
+                            // normal condition
+                            return d => colorInterpolator(linearScale(d.properties['Total Accidents']));
+                        }
+                        catch (error)
+                        {
+                            // in the case of counties with no data;
+                            return "white";
+                        }
+                    })
+            }
 
             // -----------------------------BAR CHART-----------------------------
             // Dummy data for the example
@@ -659,20 +814,25 @@
             function update(changedYear){
                 year = String(changedYear)
                 if(changedYear == 2016){
-                    accident_data = data[0]
+                    state_accident_data = data[0]
+                    county_accident_data = data[5]
                 } else if(changedYear == 2017){
-                    accident_data = data[1]
+                    state_accident_data = data[1]
+                    county_accident_data = data[6]
                 }else if(changedYear == 2018){
-                    accident_data = data[2]
+                    state_accident_data = data[2]
+                    county_accident_data = data[7]
                 }else if(changedYear == 2019){
-                    accident_data = data[3]
+                    state_accident_data = data[3]
+                    county_accident_data = data[8]
                 }else{
-                    accident_data = data[4]
+                    state_accident_data = data[4]
+                    county_accident_data = data[9]
                 }
 
                 scene_data = "data/Project_Data_Final/" + changedYear + "_SceneData.csv";
 
-                generateChoropleth(accident_data, ".fig1", 900, 700)
+                generateChoropleth(state_accident_data, ".fig1", 900, 700)
                 loadData(scene_data)
             }
 
