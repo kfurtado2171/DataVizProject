@@ -11,6 +11,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- Importing libraries -->
     <script src="./libs/d3.js"></script>
     <script src="libs/d3jstopojson.v1.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.2.2/dist/echarts.min.js"></script>
@@ -18,6 +19,7 @@
     <title>U.S. Accidents (2016-2020)</title>
 
     <style>
+        /* Setting the background color for the page */
         body {
             background-color: antiquewhite;
         }
@@ -45,6 +47,7 @@
             margin: 10px;
         }
 
+        /* Formatting for the tooltip */
         #tooltip{
             opacity: 0;
             background-color: antiquewhite;
@@ -55,6 +58,7 @@
             align-content: center;
         }
 
+        /* Formatting for the data inside tooltip */
         .tooltipData{
             font-family: "Lucida Console", monospace;
             font-size: small;
@@ -69,6 +73,7 @@
             width: 100%;
         }
 
+        /* Formatting for the container that the slider is in */
         .slider-container {
             position: relative;
             width: 50%;
@@ -76,6 +81,7 @@
             margin-bottom: 50px;
         }
 
+        /* Formatting for the steps of the slider */
         .slider-label {
             position: absolute;
             bottom: -20px;
@@ -83,12 +89,14 @@
             white-space: nowrap;
         }
 
+        /* Formatting for the title of the slider */
         label[for="theSlider"] {
             font-family: 'Lucida Console', monospace;
             font-size: 15pt;
             font-weight: bold;
         }
 
+        /* Formatting for the year displayed under the slider */
         #sliderLabel {
             font-family: 'Lucida Console', monospace;
             font-size: 20pt;
@@ -96,6 +104,7 @@
             color: #015CC8;
         }
 
+        /* Formatting for the choropleth div */
         .fig1 {
             margin-bottom: -10%; /* Adjust as needed */
         }
@@ -113,8 +122,10 @@
     <!-- svg container -->
     <div class="container">
         <h1>U.S. Total Accidents per 100,000 Population<br>(2016-2020)</h1>
+        <!-- Creating a div for the choropleth -->
         <div class="fig1"></div>
 
+        <!-- Creating the slider on the page -->
         <label for="theSlider" >Display Year</label>
         <span id="sliderLabel">2020</span>
         <datalist id="yearList">
@@ -130,22 +141,9 @@
             <div id="sliderLabelsContainer"></div>
         </div>
 
-
+        <!-- Creating a div for the bar chart -->
         <h1>Proportion of U.S. Accident Scenes<br>(2016-2020)</h1>
         <div id="fig2" style="width: 85%; height: 800px;"></div>
-
-
-        <!-- choropleth svg creation -->
-<!--        <svg id="svg-choropleth" class="svg">-->
-
-
-<!--        </svg>-->
-
-<!--        <h1>Bar Chart of U.S. Accidents (2016-2020)</h1>-->
-<!--        &lt;!&ndash; barchart svg creation &ndash;&gt;-->
-<!--        <svg id="svg-barchart" class="svg">-->
-
-<!--        </svg>-->
 
     </div>
 
@@ -164,22 +162,24 @@
 
         let year = "2020"
 
+        // Getting the filepath for all state data
         let state_json_2016 = "data/Project_Data_Final/2016_state_data.topojson"
         let state_json_2017 = "data/Project_Data_Final/2017_state_data.topojson"
         let state_json_2018 = "data/Project_Data_Final/2018_state_data.topojson"
         let state_json_2019 = "data/Project_Data_Final/2019_state_data.topojson"
         let state_json_2020 = "data/Project_Data_Final/2020_state_data.topojson"
 
+        // Getting the filepath for all county data
         let county_json_2016 = "data/Project_Data_Final/2016_county_data.topojson"
         let county_json_2017 = "data/Project_Data_Final/2017_county_data.topojson"
         let county_json_2018 = "data/Project_Data_Final/2018_county_data.topojson"
         let county_json_2019 = "data/Project_Data_Final/2019_county_data.topojson"
         let county_json_2020 = "data/Project_Data_Final/2020_county_data.topojson"
 
-        //let state_json = "data/Project_Data_Final/2017_state_data.topojson";//"data/2016_state_data.topojson";
-        let projection = d3.geoAlbersUsa() //d3.geoAlbersUsa().scale(1300).translate([500, 400])
+        // Defining a projection to be used for the choropleth of the US
+        let projection = d3.geoAlbersUsa()
 
-        //data[0] is loaded data from d3.json(state_2016_json) in promise
+        // Loading all of the data that was imported above so that it is accessible
         Promise.all(
             [d3.json(state_json_2016), d3.json(state_json_2017),
             d3.json(state_json_2018), d3.json(state_json_2019),
@@ -194,25 +194,28 @@
             });
 
 
-        // -----------------------------CHOROPLETH-----------------------------
         function main(data) {
-            // Load topojson data
+            // Load topojson data (initially load 2020 data for states and counties)
             let state_accident_data = data[4];
             let county_accident_data = data[9];
-            //console.log(data[1])
 
+            // -----------------------------CHOROPLETH-----------------------------
             const generateChoropleth = (topo_data, containerName, width, height, margin = 30) => {
+                // Removes current svg so that a new one may be drawn in its place
                 d3.select("svg").remove()
 
+                // Create new svg
                 const svg = d3.select(containerName).append("svg")
                     .attr("width", width + 50)
                     .attr("height", height);
 
+                // Load in the relevant features from the data
                 const geojson = topojson.feature(topo_data, topo_data.objects[year + '_state_data']);
 
-                console.log(geojson)
+                // Create a geo generator with the predefined projection method
                 const geo_generator = d3.geoPath().projection(projection, geojson);
 
+                // Creating one color interpolator for the choropleth and one for the legend (had to be reversed)
                 const colorInterpolator = d3.interpolateRgbBasis(['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'].reverse())
                 const colorInterpolator2 = d3.interpolateRgbBasis(['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'])
 
@@ -247,18 +250,17 @@
                     .attr("height", legendHeight)
                     .attr("fill", d => colorInterpolator2(d));
 
+                // Getting the extent of the total accidents for legend labeling
                 let min_max_total = d3.extent(geojson.features, (d) => {
-                        return d['properties']['Total Accidents']
-                    })
-                console.log(min_max_total)
+                    return d['properties']['Total Accidents']
+                })
+
+                // Rounding up/down for the max/min for display purposes
                 let min_total = Math.floor(min_max_total[0])
                 let max_total = Math.ceil(min_max_total[1])
 
-                max_total
-
                 // Create the legend labels
                 legend.selectAll("text")
-                    //.data(['120000-150000', '90000-120000', '60000-90000', '30000-60000', '0-30000'])
                     .data([max_total, '', '', '', '', '', '', '', '', min_total])
                     .enter()
                     .append("text")
@@ -267,24 +269,21 @@
                     .attr("dy", "0.35em")
                     .text(d => d);
 
+                // Creating a tooltip
                 const tooltip = d3.select("#tooltip");
 
+                // Drawing the choropleth
                 svg.selectAll("path")
                     .data(geojson.features)
                     .enter()
                     .append("path")
                     .attr("d", d => {
-                        //console.log(d)
-                        //console.log(geo_generator(d));
                         return geo_generator(d)
                     })
                     .attr("fill","antiquewhite")
-                    // .exit()
-
-                //console.log(geojson.features[1].properties['Total Accidents'])
-                //console.log(geojson['properties']['Total Accidents'])
-
+                    // Mouse event handlers
                     .on("mouseenter", (m, d) => {
+                        // Display the tooltip with the correct data
                         d3.select('#tooltip')
                             .style("opacity",.8)
                             .style("left",(m.clientX+20).toString()+"px")
@@ -293,13 +292,6 @@
                                 "<div><strong>Accidents/100k:</strong></div>" +
                                 "<div>" +d.properties['Total Accidents'] + "</div>"
                             )
-
-                        // tooltip.transition()
-                        //     .duration(200)
-                        //     .style("opacity", .9)
-                        // tooltip.html(d.properties['Total Accidents'])
-                        //     .style("left", m.clientX-10 + "px")
-                        //     .style("top", m.clientY-10 + "px");
                     })
                     .on("mousemove", (m, d) => {
                         tooltip.style("opacity", .9)
@@ -310,14 +302,13 @@
                             .style("opacity", 0)
                     })
                     .on("click", (m, d) => {
+                        // Generate a choropleth for a singular state when clicked
                         generateState(county_accident_data, ".fig1", d['properties']['STATEFP'], 900, 700);
                     })
+                    // The transition when loading in the choropleth
                     .transition()
                     .delay((_,i)=>i*2)
                     .duration(500)
-                    //.attr("fill", d => colorInterpolator(linearScale(d.properties['Total Accidents'])))
-                    //.attr("fill", "none")
-                    //.attr("stroke","black")
                     .attr("stroke-width", "0.5")
                     .attr("fill", d => colorInterpolator(logScale(d.properties['Total Accidents'])))
                     .style("fill",d=>{
@@ -336,27 +327,33 @@
 
             // ---------------------SINGLE STATE CHOROPLOETH----------------------
             const generateState = (topo_data, containerName, state, width, height, margin = 30) => {
+                // Removes current svg so that a new one may be drawn in its place
                 d3.select("svg").remove()
 
+                // Create new svg
                 const svg = d3.select(containerName).append("svg")
                     .attr("width", width + 50)
                     .attr("height", height);
 
+                // Create an object that will store the data correctly
                 let geojson = {};
                 geojson.type = "FeatureCollection";
 
+                // Load in the relevant features from the data
                 geojson.features = topojson.feature(topo_data, topo_data.objects[year + '_county_data'])
                     .features
+                    // Only gathers data for one state
                     .filter(function(d){
                         return d['properties']['STATEFP'] === state;
                     });
 
-                console.log(geojson)
-
+                // Defining a different projection method to fit a single state
                 let proj = d3.geoMercator().fitSize([width - margin, height - margin], geojson)
 
+                // Create a geo generator with the predefined projection method
                 const geo_generator = d3.geoPath().projection(proj);
 
+                // Creating one color interpolator for the choropleth and one for the legend (had to be reversed)
                 const colorInterpolator = d3.interpolateRgbBasis(['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'].reverse())
                 const colorInterpolator2 = d3.interpolateRgbBasis(['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'])
 
@@ -391,18 +388,17 @@
                     .attr("height", legendHeight)
                     .attr("fill", d => colorInterpolator2(d));
 
+                // Getting the extent of the total accidents for legend labeling
                 let min_max_total = d3.extent(geojson.features, (d) => {
                     return d['properties']['Total Accidents']
                 })
-                console.log(min_max_total)
+
+                // Rounding up/down for the max/min for display purposes
                 let min_total = Math.floor(min_max_total[0])
                 let max_total = Math.ceil(min_max_total[1])
 
-                // max_total
-
                 // Create the legend labels
                 legend.selectAll("text")
-                    //.data(['120000-150000', '90000-120000', '60000-90000', '30000-60000', '0-30000'])
                     .data([max_total, '', '', '', '', '', '', '', '', min_total])
                     .enter()
                     .append("text")
@@ -411,24 +407,21 @@
                     .attr("dy", "0.35em")
                     .text(d => d);
 
+                // Creating a tooltip
                 const tooltip = d3.select("#tooltip");
 
+                // Drawing the choropleth
                 svg.selectAll("path")
                     .data(geojson.features)
                     .enter()
                     .append("path")
                     .attr("d", d => {
-                        //console.log(d)
-                        //console.log(geo_generator(d));
                         return geo_generator(d)
                     })
                     .attr("fill","antiquewhite")
-                    // .exit()
-
-                    //console.log(geojson.features[1].properties['Total Accidents'])
-                    //console.log(geojson['properties']['Total Accidents'])
-
+                    // Mouse event handlers
                     .on("mouseenter", (m, d) => {
+                        // Display the tooltip with the correct data
                         d3.select('#tooltip')
                             .style("opacity",.8)
                             .style("left",(m.clientX+20).toString()+"px")
@@ -437,13 +430,6 @@
                                 "<div><strong>Accidents/100:</strong></div>" +
                                 "<div>" +d.properties['Total Accidents'] + "</div>"
                             )
-
-                        // tooltip.transition()
-                        //     .duration(200)
-                        //     .style("opacity", .9)
-                        // tooltip.html(d.properties['Total Accidents'])
-                        //     .style("left", m.clientX-10 + "px")
-                        //     .style("top", m.clientY-10 + "px");
                     })
                     .on("mousemove", (m, d) => {
                         tooltip.style("opacity", .9)
@@ -454,14 +440,13 @@
                             .style("opacity", 0)
                     })
                     .on("click", (m, d) => {
+                        // Generate the choropleth for a the entire US when clicked
                         generateChoropleth(state_accident_data, ".fig1", 900, 700);
                     })
+                    // The transition when loading in the choropleth
                     .transition()
                     .delay((_,i)=>i*2)
                     .duration(3000)
-                    //.attr("fill", d => colorInterpolator(linearScale(d.properties['Total Accidents'])))
-                    //.attr("fill", "none")
-                    //.attr("stroke","black")
                     .attr("stroke-width", "0.5")
                     .attr("fill", d => colorInterpolator(linearScale(d.properties['Total Accidents'])))
                     .style("fill",d=>{
@@ -478,26 +463,7 @@
             }
 
             // -----------------------------BAR CHART-----------------------------
-            // Dummy data for the example
-            // const bar_data = [
-            //     {y01: 120, y02: 180, y03: 100, y04: 77},
-            //     {y01: 60,  y02: 185, y03: 105, y04: 123},
-            //     {y01: 100, y02: 215, y03: 110, y04: 131},
-            //     {y01: 80,  y02: 230, y03: 105, y04: 231},
-            //     {y01: 120, y02: 240, y03: 105, y04: 44}
-            // ];
-
             let scene_data = "data/Project_Data_Final/" + year + "_SceneData.csv";
-            //let scene_data = "data/Project_Data_Final/2017_SceneData.csv";
-            //let scene_data = "data/Project_Data_Final/2018_SceneData.csv";
-            //let scene_data = "data/Project_Data_Final/2019_SceneData.csv";
-            //let scene_data = "data/Project_Data_Final/2020_SceneData.csv";
-
-
-
-            let values_T = [];
-            // let amenityData = [];
-            // let bumpData = [];
 
             function loadData(filename) {
                 let amenity_data = [];
@@ -515,19 +481,7 @@
                 let turning_loop_data = [];
                 let other_data = [];
 
-                //let values_T = [];
-                // let data = d3.csv(filename);
-                // console.log("DATA: " + data);
-
-                // data.forEach(function (d) {
-                //     //values_T.push(+d[scene]);
-                //     amenityData.push(+d['Amenity']);
-                //     bumpData.push(+d['Bump']);
-
-
                 d3.csv(scene_data).then(function (data){
-                    //console.log(data)
-                    //console.log(data[0]['Amenity'])
                     data.forEach(function (d) {
                         amenity_data.push(+d['Amenity'])
                         bump_data.push(+d['Bump'])
@@ -545,277 +499,250 @@
                         other_data.push(+d['Other'])
                     });
 
-                //console.log("BUMP DATA: " + bump_data)
-                //console.log("OTHER_DATA: " + other_data)
+                // Initialize ECharts instance
+                var echartsInstance = echarts.init(document.getElementById('fig2'));
 
-                //return values_T;
+                var customColors = [
+                    '#01084f',
+                    '#391954',
+                    '#631e50',
+                    '#a73c5a',
+                    '#ff7954',
+                    '#FDC2B0',
+                    '#F4CB67',
+                    '#d6d727',
+                    '#a7e237',
+                    '#37bd79',
+                    '#79ccb3',
+                    '#92cad1',
+                    '#308fac',
+                    '#D3D3D3'
+                ];
 
+                    // ECharts option
+                    var option = {
+                        color: customColors, // Set the custom color palette
+                        tooltip: {
+                            trigger: 'item',
+                            position: [1000,65],
+                            axisPointer: {
+                                type: 'shadow'
+                            }
+                        },
+                        legend: {},
+                        grid: {
+                            left: '3%',
+                            right: '4%',
+                            bottom: '3%',
+                            containLabel: true
+                        },
+                        xAxis: {
+                            name: 'Proportion',
+                            nameLocation: 'middle',
+                            nameGap: 25,
+                            nameTextStyle: {
+                                fontSize: 20,
+                            },
+                            type: 'value',
+                            max: 1
+                        },
+                        yAxis: {
+                            name: 'State',
+                            nameLocation: 'middle',
+                            nameGap: 40,
+                            nameTextStyle: {
+                                fontSize: 20,
+                            },
+                            type: 'category',
+                            axisLabel: {
+                                interval: 0, // Set to 0 to display all labels
+                            },
+                            data: ['AL', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY']
+                        },
 
-            // let amenityData = [];
-            // loadData(scene_data_2016, 'Amenity')
-            //     .then((result) => {
-            //         //amenityData = result;
-            //         console.log("RESULT: " + result);
-            //
-            //
-            // console.log("AMENITY DATA: " + amenityData)
-
-            // Initialize ECharts instance
-            var echartsInstance = echarts.init(document.getElementById('fig2'));
-
-            var customColors = [
-                '#01084f',
-                '#391954',
-                '#631e50',
-                '#a73c5a',
-                '#ff7954',
-                '#FDC2B0',
-                '#F4CB67',
-                '#d6d727',
-                '#a7e237',
-                '#37bd79',
-                '#79ccb3',
-                '#92cad1',
-                '#308fac',
-                '#D3D3D3'
-            ];
-
-            // ECharts option
-            var option = {
-                color: customColors, // Set the custom color palette
-                tooltip: {
-                    trigger: 'item',
-                    position: [1000,65],
-                    axisPointer: {
-                        type: 'shadow'
-                    }
-                },
-                legend: {},
-                grid: {
-                    left: '3%',
-                    right: '4%',
-                    bottom: '3%',
-                    containLabel: true
-                },
-                xAxis: {
-                    name: 'Proportion',
-                    nameLocation: 'middle',
-                    nameGap: 25,
-                    nameTextStyle: {
-                        fontSize: 20,
-                    },
-                    type: 'value',
-                    max: 1
-                },
-                yAxis: {
-                    name: 'State',
-                    nameLocation: 'middle',
-                    nameGap: 40,
-                    nameTextStyle: {
-                        fontSize: 20,
-                    },
-                    type: 'category',
-                    axisLabel: {
-                        interval: 0, // Set to 0 to display all labels
-                    },
-                    //data: ['AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT',]
-                    data: ['AL', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY']
-                },
-
-                series: [
-                    {
-                        name: 'Amenity',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [321, 302, 301, 334, 390, 330, 320]
-                        data: amenity_data
-                    },
-                    {
-                        name: 'Bump',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [120, 132, 101, 134, 90, 230, 210]
-                        data: bump_data
-                    },
-                    {
-                        name: 'Crossing',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [220, 182, 191, 234, 290, 330, 310]
-                        data: crossing_data
-                    },
-                    {
-                        name: 'Give_Way',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [150, 212, 201, 154, 190, 330, 410]
-                        data: give_way_data
-                    },
-                    {
-                        name: 'Junction',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [820, 832, 901, 934, 1290, 1330, 1320]
-                        data: junction_data
-                    },
-                    {
-                        name: 'No_Exit',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [952, 1125, 543, 3520, 1477, 820, 1430]
-                        data: no_exit_data
-                    },
-                    {
-                        name: 'Railway',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [862, 446, 2015, 1025, 389, 533, 262]
-                        data: railway_data
-                    },
-                    {
-                        name: 'Roundabout',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [245, 724, 2437, 243, 4587, 1722, 1472]
-                        data: roundabout_data
-                    },
-                    {
-                        name: 'Station',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [432, 1476, 2574, 786, 732, 435, 3573]
-                        data: station_data
-                    },
-                    {
-                        name: 'Stop',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [1054, 367, 2345, 532, 3453, 2587, 234]
-                        data: stop_data
-                    },
-                    {
-                        name: 'Traffic_Calming',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [324, 2420, 424, 3742, 245, 2420, 3750]
-                        data: traffic_calming_data
-                    },
-                    {
-                        name: 'Traffic_Signal',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [214, 832, 573, 243, 3542, 1534, 4243]
-                        data: traffic_signal_data
-                    },
-                    {
-                        name: 'Turning_Loop',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [945, 674, 762, 543, 1125, 3753, 1235]
-                        data: turning_loop_data
-                    },
-                    {
-                        name: 'Other',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: false
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        //data: [945, 674, 762, 543, 1125, 3753, 1235]
-                        data: other_data
-                    }
-                ]
-            };
-            // Set the option and render the chart
-            echartsInstance.setOption(option);
-            //})
+                        series: [
+                            {
+                                name: 'Amenity',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: amenity_data
+                            },
+                            {
+                                name: 'Bump',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: bump_data
+                            },
+                            {
+                                name: 'Crossing',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: crossing_data
+                            },
+                            {
+                                name: 'Give_Way',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: give_way_data
+                            },
+                            {
+                                name: 'Junction',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: junction_data
+                            },
+                            {
+                                name: 'No_Exit',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: no_exit_data
+                            },
+                            {
+                                name: 'Railway',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: railway_data
+                            },
+                            {
+                                name: 'Roundabout',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: roundabout_data
+                            },
+                            {
+                                name: 'Station',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: station_data
+                            },
+                            {
+                                name: 'Stop',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: stop_data
+                            },
+                            {
+                                name: 'Traffic_Calming',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: traffic_calming_data
+                            },
+                            {
+                                name: 'Traffic_Signal',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: traffic_signal_data
+                            },
+                            {
+                                name: 'Turning_Loop',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: turning_loop_data
+                            },
+                            {
+                                name: 'Other',
+                                type: 'bar',
+                                stack: 'total',
+                                label: {
+                                    show: false
+                                },
+                                emphasis: {
+                                    focus: 'series'
+                                },
+                                data: other_data
+                            }
+                        ]
+                    };
+                // Set the option and render the chart
+                echartsInstance.setOption(option);
                 });
             }
             loadData(scene_data)
 
+            // Function for updating the data that is being used
             function update(changedYear){
+                // Updates the year variable so the proper attributes can be taken from the datasets
                 year = String(changedYear)
+
+                // Switches to the proper state/county data depending on the selected year
                 if(changedYear == 2016){
                     state_accident_data = data[0]
                     county_accident_data = data[5]
@@ -833,22 +760,26 @@
                     county_accident_data = data[9]
                 }
 
+                // Loads the proper data for the bar chart
                 scene_data = "data/Project_Data_Final/" + changedYear + "_SceneData.csv";
 
+                // Generates a new choropleth/bar chart
                 generateChoropleth(state_accident_data, ".fig1", 900, 700)
                 loadData(scene_data)
             }
 
+            // Creating the event listener for the slider
             let slider = document.querySelector("#theSlider")
             let sliderLabel = document.querySelector("#sliderLabel");
             let sliderLabelsContainer = document.querySelector("#sliderLabelsContainer");
             updateSliderLabels();
+
+            // Gets the value of the slider and passes it to the update function when changed
             slider.addEventListener("change",()=>{
-                const newYear = +slider.value; // get the value of the slider
-                //console.log(newYear)
+                const newYear = +slider.value;
                 sliderLabel.textContent = newYear;
                 update(newYear);
-                updateSliderLabels();
+                // updateSliderLabels();
             })
 
             function updateSliderLabels() {
