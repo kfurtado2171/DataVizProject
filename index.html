@@ -103,12 +103,6 @@
             font-weight: bold;
             color: #015CC8;
         }
-
-        /* Formatting for the choropleth div */
-        .fig1 {
-            margin-bottom: -10%; /* Adjust as needed */
-        }
-
     </style>
 </head>
 
@@ -121,10 +115,6 @@
 
     <!-- svg container -->
     <div class="container">
-        <h1>U.S. Total Accidents per 100,000 Population<br>(2016-2020)</h1>
-        <!-- Creating a div for the choropleth -->
-        <div class="fig1"></div>
-
         <!-- Creating the slider on the page -->
         <label for="theSlider" >Display Year</label>
         <span id="sliderLabel">2020</span>
@@ -141,9 +131,13 @@
             <div id="sliderLabelsContainer"></div>
         </div>
 
+        <h1>U.S. Total Accidents per 100,000 Population<br>(2016-2020)</h1>
+        <!-- Creating a div for the choropleth -->
+        <div class="fig1"></div>
+
         <!-- Creating a div for the bar chart -->
         <h1>Proportion of U.S. Accident Scenes<br>(2016-2020)</h1>
-        <div id="fig2" style="width: 85%; height: 800px;"></div>
+        <div id="fig2" style="width: 85%; height: 800px; margin: 50px; margin-top: 10px"></div>
 
     </div>
 
@@ -244,7 +238,7 @@
                     .data(d3.range(0, 1, 0.1)) // Create 10 legend items
                     .enter()
                     .append("rect")
-                    .attr("x", 50)
+                    .attr("x", 125)
                     .attr("y", (d, i) => i * legendHeight - 100)
                     .attr("width", legendWidth)
                     .attr("height", legendHeight)
@@ -259,14 +253,18 @@
                 let min_total = Math.floor(min_max_total[0])
                 let max_total = Math.ceil(min_max_total[1])
 
+                let min_total_string = String(min_total)
+                min_total_string = '  ' + min_total_string
+
                 // Create the legend labels
                 legend.selectAll("text")
-                    .data([max_total, '', '', '', '', '', '', '', '', min_total])
+                    .data([max_total, '', '', '', '', '', '', '', '', '', '', min_total_string])
                     .enter()
                     .append("text")
-                    .attr("x", legendWidth + 60)
-                    .attr("y", (d, i) => i * legendHeight + legendHeight / 2 - 100)
+                    .attr("x", legendWidth + 115)
+                    .attr("y", (d, i) => i * legendHeight + legendHeight / 2 - 120)
                     .attr("dy", "0.35em")
+                    .attr("text-anchor", "middle")
                     .text(d => d);
 
                 // Creating a tooltip
@@ -382,7 +380,7 @@
                     .data(d3.range(0, 1, 0.1)) // Create 10 legend items
                     .enter()
                     .append("rect")
-                    .attr("x", 50)
+                    .attr("x", 125)
                     .attr("y", (d, i) => i * legendHeight - 100)
                     .attr("width", legendWidth)
                     .attr("height", legendHeight)
@@ -399,12 +397,13 @@
 
                 // Create the legend labels
                 legend.selectAll("text")
-                    .data([max_total, '', '', '', '', '', '', '', '', min_total])
+                    .data([max_total, '', '', '', '', '', '', '', '', '', '', min_total])
                     .enter()
                     .append("text")
-                    .attr("x", legendWidth + 60)
-                    .attr("y", (d, i) => i * legendHeight + legendHeight / 2 - 100)
+                    .attr("x", legendWidth + 115)
+                    .attr("y", (d, i) => i * legendHeight + legendHeight / 2 - 120)
                     .attr("dy", "0.35em")
+                    .attr("text-anchor", "middle")
                     .text(d => d);
 
                 // Creating a tooltip
@@ -514,17 +513,19 @@
                     '#a7e237',
                     '#37bd79',
                     '#79ccb3',
-                    '#92cad1',
+                    //'#92cad1',
                     '#308fac',
                     '#D3D3D3'
                 ];
+
+                    let chartWidth = echartsInstance.getWidth();
 
                     // ECharts option
                     var option = {
                         color: customColors, // Set the custom color palette
                         tooltip: {
                             trigger: 'item',
-                            position: [1000,65],
+                            position: [4*chartWidth/5,65],
                             axisPointer: {
                                 type: 'shadow'
                             }
@@ -705,18 +706,18 @@
                                 },
                                 data: traffic_signal_data
                             },
-                            {
-                                name: 'Turning_Loop',
-                                type: 'bar',
-                                stack: 'total',
-                                label: {
-                                    show: false
-                                },
-                                emphasis: {
-                                    focus: 'series'
-                                },
-                                data: turning_loop_data
-                            },
+                            // {
+                            //     name: 'Turning_Loop',
+                            //     type: 'bar',
+                            //     stack: 'total',
+                            //     label: {
+                            //         show: false
+                            //     },
+                            //     emphasis: {
+                            //         focus: 'series'
+                            //     },
+                            //     data: turning_loop_data
+                            // },
                             {
                                 name: 'Other',
                                 type: 'bar',
@@ -797,8 +798,6 @@
                 }
             }
         }
-
-
 
     </script>
 
