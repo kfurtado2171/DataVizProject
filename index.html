@@ -270,9 +270,15 @@
                 // Creating a tooltip
                 const tooltip = d3.select("#tooltip");
 
+                const sortedData = geojson.features.slice().sort((a, b) => {
+                    const accidentsA = a.properties['Total Accidents'];
+                    const accidentsB = b.properties['Total Accidents'];
+                    return accidentsA - accidentsB;
+                });
+
                 // Drawing the choropleth
                 svg.selectAll("path")
-                    .data(geojson.features)
+                    .data(sortedData)
                     .enter()
                     .append("path")
                     .attr("d", d => {
@@ -288,7 +294,7 @@
                             .style("top",(m.clientY+20).toString()+"px")
                             .html(
                                 "<div><strong>Accidents/100k:</strong></div>" +
-                                "<div>" +d.properties['Total Accidents'] + "</div>"
+                                "<div>" +parseFloat(d.properties['Total Accidents']).toFixed(2) + "</div>"
                             )
                     })
                     .on("mousemove", (m, d) => {
@@ -308,6 +314,7 @@
                     .delay((_,i)=>i*2)
                     .duration(500)
                     .attr("stroke-width", "0.5")
+                    //.attr("stroke", "white")
                     .attr("fill", d => colorInterpolator(logScale(d.properties['Total Accidents'])))
                     .style("fill",d=>{
                         try{
@@ -363,6 +370,23 @@
 
                 // if the data is scaled using linear scale
                 const linearScale = d3.scaleLinear()
+                    .domain(d3.extent(geojson.features, (d) => {
+                        return d['properties']['Total Accidents']
+                    }))
+
+                const quantizeScale = d3.scaleQuantize()
+                    .domain(d3.extent(geojson.features, (d) => {
+                        return d['properties']['Total Accidents']
+                    }))
+                    .range(colorInterpolator);
+
+                const sqrtScale = d3.scaleSqrt()
+                    .domain(d3.extent(geojson.features, (d) => {
+                        return d['properties']['Total Accidents']
+                    }))
+                    .range([0, 1]);
+
+                const symlogScale = d3.scaleSymlog()
                     .domain(d3.extent(geojson.features, (d) => {
                         return d['properties']['Total Accidents']
                     }))
@@ -427,7 +451,7 @@
                             .style("top",(m.clientY+20).toString()+"px")
                             .html(
                                 "<div><strong>Accidents/100:</strong></div>" +
-                                "<div>" +d.properties['Total Accidents'] + "</div>"
+                                "<div>" + parseFloat(d.properties['Total Accidents']).toFixed(2) + "</div>"
                             )
                     })
                     .on("mousemove", (m, d) => {
@@ -439,19 +463,20 @@
                             .style("opacity", 0)
                     })
                     .on("click", (m, d) => {
-                        // Generate the choropleth for a the entire US when clicked
+                        // Generate the choropleth for a state when clicked
                         generateChoropleth(state_accident_data, ".fig1", 900, 700);
                     })
                     // The transition when loading in the choropleth
                     .transition()
                     .delay((_,i)=>i*2)
                     .duration(3000)
-                    .attr("stroke-width", "0.5")
-                    .attr("fill", d => colorInterpolator(linearScale(d.properties['Total Accidents'])))
+                    .attr("stroke-width", "0.25")
+                    .attr("stroke", "white")
+                    .attr("fill", d => colorInterpolator(symlogScale(d.properties['Total Accidents'])))
                     .style("fill",d=>{
                         try{
                             // normal condition
-                            return d => colorInterpolator(linearScale(d.properties['Total Accidents']));
+                            return d => colorInterpolator(symlogScale(d.properties['Total Accidents']));
                         }
                         catch (error)
                         {
@@ -482,20 +507,20 @@
 
                 d3.csv(scene_data).then(function (data){
                     data.forEach(function (d) {
-                        amenity_data.push(+d['Amenity'])
-                        bump_data.push(+d['Bump'])
-                        crossing_data.push(+d['Crossing'])
-                        give_way_data.push(+d['Give_Way'])
-                        junction_data.push(+d['Junction'])
-                        no_exit_data.push(+d['No_Exit'])
-                        railway_data.push(+d['Railway'])
-                        roundabout_data.push(+d['Roundabout'])
-                        station_data.push(+d['Station'])
-                        stop_data.push(+d['Stop'])
-                        traffic_calming_data.push(+d['Traffic_Calming'])
-                        traffic_signal_data.push(+d['Traffic_Signal'])
-                        turning_loop_data.push(+d['Turning_Loop'])
-                        other_data.push(+d['Other'])
+                        amenity_data.push(parseFloat(+d['Amenity'] * 100).toFixed(2))
+                        bump_data.push(parseFloat(+d['Bump'] * 100).toFixed(2))
+                        crossing_data.push(parseFloat(+d['Crossing'] * 100).toFixed(2))
+                        give_way_data.push(parseFloat(+d['Give_Way'] * 100).toFixed(2))
+                        junction_data.push(parseFloat(+d['Junction'] * 100).toFixed(2))
+                        no_exit_data.push(parseFloat(+d['No_Exit'] * 100).toFixed(2))
+                        railway_data.push(parseFloat(+d['Railway'] * 100).toFixed(2))
+                        roundabout_data.push(parseFloat(+d['Roundabout'] * 100).toFixed(2))
+                        station_data.push(parseFloat(+d['Station'] * 100).toFixed(2))
+                        stop_data.push(parseFloat(+d['Stop'] * 100).toFixed(2))
+                        traffic_calming_data.push(parseFloat(+d['Traffic_Calming'] * 100).toFixed(2))
+                        traffic_signal_data.push(parseFloat(+d['Traffic_Signal'] * 100).toFixed(2))
+                        turning_loop_data.push(parseFloat(+d['Turning_Loop'] * 100).toFixed(2))
+                        other_data.push(parseFloat(+d['Other'] * 100).toFixed(2))
                     });
 
                 // Initialize ECharts instance
@@ -528,6 +553,10 @@
                             position: [4*chartWidth/5,65],
                             axisPointer: {
                                 type: 'shadow'
+                            },
+                            formatter: function (params) {
+                                var colorCircle = '<span style="display:inline-block; width:10px; height:10px; border-radius:50%; background-color:' + params.color + '"></span>';
+                                return params.seriesName + '<br/>' + colorCircle + ' ' + params.name + ': ' + params.value + '%';
                             }
                         },
                         legend: {},
@@ -545,7 +574,7 @@
                                 fontSize: 20,
                             },
                             type: 'value',
-                            max: 1
+                            max: 100
                         },
                         yAxis: {
                             name: 'State',
