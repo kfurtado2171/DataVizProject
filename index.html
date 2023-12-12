@@ -151,7 +151,6 @@
         const svgWidth = window_dims.width/2;
         const svgHeight = window_dims.height/3;
 
-
         let svg = d3.select('svg');
 
         let year = "2020"
@@ -475,12 +474,12 @@
                     .attr("fill", d => colorInterpolator(symlogScale(d.properties['Total Accidents'])))
                     .style("fill",d=>{
                         try{
-                            // normal condition
+                            // Normal condition
                             return d => colorInterpolator(symlogScale(d.properties['Total Accidents']));
                         }
                         catch (error)
                         {
-                            // in the case of counties with no data;
+                            // In the case of counties with no data;
                             return "white";
                         }
                     })
@@ -489,6 +488,7 @@
             // -----------------------------BAR CHART-----------------------------
             let scene_data = "data/Project_Data_Final/" + year + "_SceneData.csv";
 
+            // Load data for each scene into their respective list
             function loadData(filename) {
                 let amenity_data = [];
                 let bump_data = [];
@@ -505,6 +505,7 @@
                 let turning_loop_data = [];
                 let other_data = [];
 
+                // Extract each scene's ratio data, convert it to a percent, and round it to 2 decimal places
                 d3.csv(scene_data).then(function (data){
                     data.forEach(function (d) {
                         amenity_data.push(parseFloat(+d['Amenity'] * 100).toFixed(2))
@@ -526,6 +527,7 @@
                 // Initialize ECharts instance
                 var echartsInstance = echarts.init(document.getElementById('fig2'));
 
+                // Specify colors for each scene
                 var customColors = [
                     '#01084f',
                     '#391954',
@@ -538,16 +540,15 @@
                     '#a7e237',
                     '#37bd79',
                     '#79ccb3',
-                    //'#92cad1',
                     '#308fac',
                     '#D3D3D3'
                 ];
 
                     let chartWidth = echartsInstance.getWidth();
 
-                    // ECharts option
+                    // Configure ECharts options (styling, axes, series)
                     var option = {
-                        color: customColors, // Set the custom color palette
+                        color: customColors,
                         tooltip: {
                             trigger: 'item',
                             position: [4*chartWidth/5,65],
@@ -585,11 +586,10 @@
                             },
                             type: 'category',
                             axisLabel: {
-                                interval: 0, // Set to 0 to display all labels
+                                interval: 0,
                             },
                             data: ['AL', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY']
                         },
-
                         series: [
                             {
                                 name: 'Amenity',
@@ -735,18 +735,6 @@
                                 },
                                 data: traffic_signal_data
                             },
-                            // {
-                            //     name: 'Turning_Loop',
-                            //     type: 'bar',
-                            //     stack: 'total',
-                            //     label: {
-                            //         show: false
-                            //     },
-                            //     emphasis: {
-                            //         focus: 'series'
-                            //     },
-                            //     data: turning_loop_data
-                            // },
                             {
                                 name: 'Other',
                                 type: 'bar',
@@ -761,10 +749,11 @@
                             }
                         ]
                     };
-                // Set the option and render the chart
+                // Set the ECharts option and render the chart
                 echartsInstance.setOption(option);
                 });
             }
+            // Initiate loading data for each scene
             loadData(scene_data)
 
             // Function for updating the data that is being used
@@ -809,9 +798,9 @@
                 const newYear = +slider.value;
                 sliderLabel.textContent = newYear;
                 update(newYear);
-                // updateSliderLabels();
             })
 
+            // Displays labels for each year on slider
             function updateSliderLabels() {
                 sliderLabelsContainer.innerHTML = "";
                 const minYear = +slider.min;
